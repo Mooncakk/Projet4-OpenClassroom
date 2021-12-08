@@ -138,29 +138,32 @@ class IssueDuMatch:
       self.score2 = 0
       self.score_joueur1 = [joueur1, self.score1]
       self.score_joueur2 = [joueur2, self.score2]
-      return self.score1, self.score2
+      self.score = [self.score1, self.score2]
+      return self.score1, self.score2, self.score
     elif  self.resultat == 'D':
       self.score1 = 0
       self.score2 = 1
       self.score_joueur1 = [joueur1, self.score1]
       self.score_joueur2 = [joueur2, self.score2]
-      return self.score1, self.score2
+      self.score = [self.score1, self.score2]
+      return self.score1, self.score2, self.score
     elif  self.resultat == 'N':
       self.score1 = 0.5
       self.score2 = 0.5
       self.score_joueur1 = [joueur1, self.score1]
       self.score_joueur2 = [joueur2, self.score2]
-      return self.score1, self.score2
+      self.score = [self.score1, self.score2]
+      return self.score1, self.score2, self.score
 
 class Match:
 
   def __init__(self):
     self.filename = 'rounds.json'
-    self.score_joueur = []
+    self.instance_tours = []
     path_file = f'./{self.filename}'
     path = os.path.exists(path_file)
     if path == False:
-      GestionFichierJson().ecriture_du_fichier(self.score_joueur, self.filename, 4)
+      GestionFichierJson().ecriture_du_fichier(self.instance_tours, self.filename, 4)
     else:
       pass
 
@@ -174,14 +177,20 @@ class Match:
     print(self.round)
     self.liste_score_joueur1 = []
     self.liste_score_joueur2 = []
+    self.match_unique = []
+    self.matchs_multiples = []
     for joueur in self.duel:
       self.match = IssueDuMatch().resultat(joueur[0], joueur[1])
       self.liste_score_joueur1.append(self.match[0])
       self.liste_score_joueur2.append(self.match[1])
-      joueur_et_score = ([joueur[0], self.match[0]], [joueur[1], self.match[1]])
-      temp = GestionFichierJson().lecture_du_fichier(self.filename)
-      temp.append(joueur_et_score)
-      GestionFichierJson().ecriture_du_fichier(temp, self.filename)
+      self.joueur_et_score = ([joueur[0], self.match[0]], [joueur[1], self.match[1]])
+      self.score_match = self.match[2]
+      self.match_unique.append(self.joueur_et_score)
+      self.matchs_multiples.append(self.score_match)
+    print(self.match_unique)
+    print(self.matchs_multiples)
+    self.temp = [self.matchs_multiples, self.match_unique]
+    GestionFichierJson().ecriture_du_fichier(self.temp, './temp/temp_infos_tournoi.json')
     return self.liste_score_joueur1, self.liste_score_joueur2
 
   
@@ -266,17 +275,17 @@ class ExecutionAlgorithm:
   '''éxecution du script'''
   def __init__(self):
     nb_tours = GestionFichierJson().lecture_du_fichier('Tournois.json')[0]['Nombre de tours']
-    print(nb_tours)
+    print(nb_tours, 'tours')
     GestionDossierTemp().toto()
     #GestionDossierTemp().creation_dossier()
     print(f'Debut du round 1')
     UpdateJoueurs().score_tour(GenerationDesPaires().duels_tour1())
     UpdateJoueurs().update_classement_score_tour(GenerationDesPaires().duels_tour1())
-    for i in range(nb_tours-1):
+    '''for i in range(nb_tours-1):
       print(f'Debut du round {i+2}')
       UpdateJoueurs().score_tour(GenerationDesPaires().duels_tour_suivant())
       UpdateJoueurs().update_classement_score_tour(GenerationDesPaires().duels_tour_suivant)
-    UpdateJoueurs().update_classement_general()
+    UpdateJoueurs().update_classement_general()'''
     #GestionDossierTemp().suppression_dossier()
 
 
