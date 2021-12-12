@@ -62,7 +62,6 @@ class GenerationDesPaires:
                 checklist.append(ck)
 
             if any(checklist) == False:
-                print('le duel peut avoir lieu sans problème !')
                 self.duels.append((joueur1, joueur2_id))
                 if len(reserve) > 1:
                     reserve.pop(0)
@@ -74,7 +73,6 @@ class GenerationDesPaires:
                     self.liste_joueurs.pop(0)
                     self.liste_joueurs.pop(0)
             else:
-                print('le duel a déjà eu lieu, prendre de le joueur suivant !')
                     
                 if len(reserve) > 1:
                     joueur2_id = self.liste_joueurs[0]
@@ -119,11 +117,9 @@ class GenerationDesPaires:
                     self.liste_joueurs.pop(0)
                     self.liste_joueurs.pop(0)
 
-    print(self.duels)
-
     self.duels_precedent.append(self.duels)
     GestionFichierJson().ecriture_du_fichier(self.duels_precedent, './temp/temp_liste_des_duels.json')
-    '''Mettre les listes de duels dans un fichier temporaire pour pouvoir comparer si il y a une similitude !UTILISÉ a+ !'''
+    '''Mettre les listes de duels dans un fichier temporaire pour pouvoir comparer si il y a une similitude !'''
     return self.duels
 
 
@@ -171,10 +167,6 @@ class Match:
     
     liste_joueurs = GestionFichierJson().lecture_du_fichier('Joueurs.json')
     self.duel = duels
-    self.round_start = datetime.datetime.now().strftime("%-d/%m/%y %H:%M:%S")
-    self.round_end = datetime.datetime.now().strftime("%-d/%m/%y %H:%M:%S")
-    self.round = (f'Round :\n Date et heure de début du round : {self.round_start}\n Date et heure de fin du round : {self.round_end}\n')
-    print(self.round)
     self.liste_score_joueur1 = []
     self.liste_score_joueur2 = []
     self.match_unique = []
@@ -187,8 +179,6 @@ class Match:
       self.score_match = self.match[2]
       self.match_unique.append(self.joueur_et_score)
       self.matchs_multiples.append(self.score_match)
-    print(self.match_unique)
-    print(self.matchs_multiples)
     self.temp = [self.matchs_multiples, self.match_unique]
     GestionFichierJson().ecriture_du_fichier(self.temp, './temp/temp_infos_tournoi.json')
     return self.liste_score_joueur1, self.liste_score_joueur2
@@ -276,17 +266,38 @@ class ExecutionAlgorithm:
   def __init__(self):
     nb_tours = GestionFichierJson().lecture_du_fichier('Tournois.json')[0]['Nombre de tours']
     print(nb_tours, 'tours')
-    GestionDossierTemp().toto()
-    #GestionDossierTemp().creation_dossier()
+    GestionDossierTemp().creation_dossier()
     print(f'Debut du round 1')
+    self.round_start = datetime.datetime.now().strftime("%-d/%m/%y %H:%M:%S")
     UpdateJoueurs().score_tour(GenerationDesPaires().duels_tour1())
     UpdateJoueurs().update_classement_score_tour(GenerationDesPaires().duels_tour1())
-    '''for i in range(nb_tours-1):
+    self.round_end = datetime.datetime.now().strftime("%-d/%m/%y %H:%M:%S")
+    infos_tournoi = GestionFichierJson().lecture_du_fichier('./temp/temp_infos_tournoi.json')
+    instance_tournoi = []
+    instance_tour = [f'Round {1}, Date et heure de debut : {self.round_start}, Date et heure de fin : {self.round_end}']
+    instance_tour.append(infos_tournoi[0])
+    instance_tour.append(infos_tournoi[1])
+    instance_tournoi.append(instance_tour)
+    GestionFichierJson().ecriture_du_fichier(instance_tournoi, 'Instance_Tournoi.json')
+
+    for i in range(nb_tours-1):
+
       print(f'Debut du round {i+2}')
+      self.round_start = datetime.datetime.now().strftime("%-d/%m/%y %H:%M:%S")
       UpdateJoueurs().score_tour(GenerationDesPaires().duels_tour_suivant())
       UpdateJoueurs().update_classement_score_tour(GenerationDesPaires().duels_tour_suivant)
-    UpdateJoueurs().update_classement_general()'''
-    #GestionDossierTemp().suppression_dossier()
+      self.round_end = datetime.datetime.now().strftime("%-d/%m/%y %H:%M:%S")
+      infos_tournoi = GestionFichierJson().lecture_du_fichier('./temp/temp_infos_tournoi.json')
+      instance_tour = [f'Round {i+2}, Date et heure de debut : {self.round_start}, Date et heure de fin : {self.round_end}']
+      instance_tour.append(infos_tournoi[0])
+      instance_tour.append(infos_tournoi[1])
+      instance_tournoi = GestionFichierJson().lecture_du_fichier('Instance_Tournoi.json')
+      instance_tournoi.append(instance_tour)
+      GestionFichierJson().ecriture_du_fichier(instance_tournoi, 'Instance_Tournoi.json')
+
+    UpdateJoueurs().update_classement_general()
+    GestionDossierTemp().suppression_dossier()
 
 
 ExecutionAlgorithm()
+
