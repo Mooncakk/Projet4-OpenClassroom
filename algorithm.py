@@ -6,13 +6,15 @@ import random
 import time
 from itertools import count, islice
 from utills import GestionDossierTemp, GestionFichierJson, CheckDuel as cd
-from afficher_liste_joueurs_et_tournois import ListeJoueurs
+from gestion_joueurs_et_tournois import ListeJoueurs
 
 
 class GenerationDesPaires:
   
   def liste_des_joueurs(self):
-    return GestionFichierJson().lecture_du_fichier('Joueurs.json')
+    nb_joueurs = GestionFichierJson().lecture_du_fichier('Tournois.json')[-1]['Joueurs']
+    return GestionFichierJson().lecture_du_fichier('Joueurs.json')[:nb_joueurs]
+    
 
   def liste_joueurs_classe(self):
     self.dict_joueurs = dict()
@@ -27,7 +29,8 @@ class GenerationDesPaires:
     self.duels_precedent = []
     self.duels_tour1 = []
     self.liste_joueurs = GenerationDesPaires().liste_joueurs_classe()
-    for partie1_joueurs, partie2_joueurs in zip(self.liste_joueurs, islice(self.liste_joueurs, 4, None)) :
+    self.mediane = len(self.liste_joueurs)//2
+    for partie1_joueurs, partie2_joueurs in zip(self.liste_joueurs, islice(self.liste_joueurs, self.mediane, None)) :
       duel = partie1_joueurs, partie2_joueurs
       self.duels_tour1.append(duel)
     self.duels_precedent.append(self.duels_tour1)
@@ -40,7 +43,7 @@ class GenerationDesPaires:
     self.duels_precedent = GestionFichierJson().lecture_du_fichier('./temp/temp_liste_des_duels.json')
     self.duels = []
     reserve = []
-    nb_duels = int(len(self.liste_joueurs)/2)
+    nb_duels = int(len(self.liste_joueurs)//2)
     while len(self.liste_joueurs) > 0:
         for i in range(nb_duels):
 
@@ -183,8 +186,6 @@ class Match:
     GestionFichierJson().ecriture_du_fichier(self.temp, './temp/temp_infos_tournoi.json')
     return self.liste_score_joueur1, self.liste_score_joueur2
 
-  
-
 
 class UpdateJoueurs():
   def score_tour(self, duels):
@@ -192,8 +193,9 @@ class UpdateJoueurs():
     self.liste_scores_joueur1 = self.liste_scores[0]
     self.liste_scores_joueur2 = self.liste_scores[1]
     self.id_joueurs = GenerationDesPaires().liste_joueurs_classe()
+    self.mediane = len(self.id_joueurs)//2
     self.score_tour = {}
-    for id_joueurs1, id_joueurs2, score1, score2 in zip(self.id_joueurs, islice(self.id_joueurs,4,None), self.liste_scores_joueur1, self.liste_scores_joueur2):
+    for id_joueurs1, id_joueurs2, score1, score2 in zip(self.id_joueurs, islice(self.id_joueurs,self.mediane,None), self.liste_scores_joueur1, self.liste_scores_joueur2):
       self.score_tour[id_joueurs1] = score1
       self.score_tour[id_joueurs2] = score2
     GestionFichierJson().ecriture_du_fichier(self.score_tour, './temp/temp_score_tour.json')
@@ -206,9 +208,12 @@ class UpdateJoueurs():
     self.id_joueurs = GenerationDesPaires().liste_joueurs_classe()
     path_file = f'./temp/temp_scores_tours_precedent.json'
     path = os.path.exists(path_file)
+    self.nb_joueurs = GestionFichierJson().lecture_du_fichier('Tournois.json')[-1]['Joueurs'] + 1
+    
+
     if path == True:     
       scores_tours_precedent = GestionFichierJson().lecture_du_fichier('./temp/temp_scores_tours_precedent.json')
-      for i in range(1,9):
+      for i in range(1,self.nb_joueurs):
         scores_tours_precedent[f'{i}'] += self.score_tour[f'{i}']
 
       self.classement_joueurs_par_score = dict(sorted(scores_tours_precedent.items(),key= lambda x : x[1], reverse= True))
@@ -247,28 +252,17 @@ class UpdateJoueurs():
 
     #'''prendre liste trié par classement l utiliser comme indice dans la boucle'''
       
-  
-
-#UpdateJoueurs().update_classement_general()
-#Match().match(GenerationDesPaires().duels_tour1())
-#CreationDossierTemp().creation_dossier()
-#UpdateJoueurs().score_tour(GenerationDesPaires().duels_tour1())
-#UpdateJoueurs().update_classement_score_tour(GenerationDesPaires().duels_tour1())
-#GenerationDesPaires().duels_tour_suivant()
-#Match().match(GenerationDesPaires().duels_tour_suivant())
-#UpdateJoueurs().score_tour(GenerationDesPaires().duels_tour1())
-#UpdateJoueurs().score_tour(GenerationDesPaires().duels_tour_suivant())
-#CreationDossierTemp().suppression_dossier()
-
 
 class ExecutionAlgorithm:
   '''éxecution du script'''
+  
   def __init__(self):
-    nb_tours = GestionFichierJson().lecture_du_fichier('Tournois.json')[0]['Nombre de tours']
-    print(nb_tours, 'tours')
-    GestionDossierTemp().creation_dossier()
-    print(f'Debut du round 1')
+  
+    nb_tours = GestionFichierJson().lecture_du_fichier('Tournois.json')[0]['Nombre de tours']  
+    GestionDossierTemp().toto()
     self.round_start = datetime.datetime.now().strftime("%-d/%m/%y %H:%M:%S")
+    print(f'Début du tournoi : {self.round_start}')
+    print(f'Debut du round 1')
     UpdateJoueurs().score_tour(GenerationDesPaires().duels_tour1())
     UpdateJoueurs().update_classement_score_tour(GenerationDesPaires().duels_tour1())
     self.round_end = datetime.datetime.now().strftime("%-d/%m/%y %H:%M:%S")
@@ -297,7 +291,5 @@ class ExecutionAlgorithm:
 
     UpdateJoueurs().update_classement_general()
     GestionDossierTemp().suppression_dossier()
-
-
-ExecutionAlgorithm()
+    print(f'Fin du tournoi : {self.round_end}')
 

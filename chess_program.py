@@ -1,7 +1,8 @@
 import json
 import os
 from utills import *
-from afficher_liste_joueurs_et_tournois import *
+from gestion_joueurs_et_tournois import *
+from algorithm import ExecutionAlgorithm
 
 class AjoutJoueurs():
 
@@ -116,7 +117,7 @@ class AjoutTournoi():
                      'Date' : self.date,
                      'Nombre de tours' : self.nombre_de_tours,
                      'Tournées': int(self.tournees),
-                     'Joueurs' : self.joueur,
+                     'Joueurs' : int(self.joueur),
                      'Temps' : self.temps,
                      'Description' : self.description}
 
@@ -141,7 +142,7 @@ class RetourMenuTournoi():
 class Menu():
 
  def selection_menu(self):
-    self.menu = input(f'Tapez le chiffre du menu souhaité : \n (1) Ajouter joueurs\n (2) Ajouter tournoi\n (3) Afficher la liste des joueurs\n (4) Afficher la liste des tournois\n (5) Quitter\n - ')
+    self.menu = input(f'Tapez le chiffre du menu souhaité : \n (1) Ajouter joueurs\n (2) Ajouter tournoi\n (3) Afficher la liste des joueurs\n (4) Afficher la liste des tournois\n (5) Commencer le tournoi\n (6) Quitter\n - ')
     if self.menu == '1':
       AjJ()
     elif self.menu == '2':
@@ -151,6 +152,12 @@ class Menu():
     elif self.menu == '4':
       ListeTournoi().afficher_tournoi()
     elif self.menu == '5':
+      path = os.path.exists('./Tournois.json')
+      if path == True:
+        ExecutionAlgorithm()
+      else :
+        print('Aucun tournoi trouvé')
+    elif self.menu == '6':
       return
     else :
       print('ERREUR! Veuillez taper un chiffre correspondant à un menu')
@@ -159,11 +166,10 @@ class Menu():
 #AjoutJoueurs().infos_joueur()
 #Menu().selection_menu()
 
-#Menu().selection_menu()
+Menu().selection_menu()
 #ListeJoueurs().afficher_joueurs()
 
 
 
 #import brouill
 #import afficher_liste_joueurs_et_tournois
-import algorithm
