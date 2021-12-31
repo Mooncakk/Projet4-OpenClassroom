@@ -5,18 +5,21 @@ import os
 import random
 import time
 from itertools import count, islice
-from utills import GestionDossierTemp, GestionFichierJson, CheckDuel as cd
-from gestion_joueurs_et_tournois import ListeJoueurs
+from modules import GestionDossierTemp, GestionFichierJson, CheckDuel as cd, ListeJoueurs
+#from gestion_joueurs_et_tournois import ListeJoueurs, GestionFichierJson
 
 
 class GenerationDesPaires:
   
   def liste_des_joueurs(self):
+    '''Récupère et retourne la liste des joueurd du fichier JSON'''
     nb_joueurs = GestionFichierJson().lecture_du_fichier('Tournois.json')[-1]['Joueurs']
     return GestionFichierJson().lecture_du_fichier('Joueurs.json')[:nb_joueurs]
     
 
   def liste_joueurs_classe(self):
+    '''Trie la liste des joueurs par ordre de classement'''
+
     self.dict_joueurs = dict()
     self.liste_joueurs = GenerationDesPaires().liste_des_joueurs()
     for joueur_id, infos_joueur in zip(count(1), self.liste_joueurs):
@@ -25,7 +28,8 @@ class GenerationDesPaires:
     self.liste_trie_par_classement = sorted(self.dict_joueurs, key = lambda x :(self.dict_joueurs[x]['Classement']), reverse = True)
     return self.liste_trie_par_classement
 
-  def duels_tour1(self):    
+  def duels_tour1(self): 
+    '''Sépare la liste des joueurs classé en deux et les associe pour former des duels'''   
     self.duels_precedent = []
     self.duels_tour1 = []
     self.liste_joueurs = GenerationDesPaires().liste_joueurs_classe()
@@ -39,6 +43,7 @@ class GenerationDesPaires:
     return self.duels_tour1
 
   def duels_tour_suivant(self) :
+    '''Récupère la liste des duels passé et le classement temporaire du tournoi pour former les duels du tour suivant en évitant que les joueurs affrontent le même adversdaire deuux fois'''
     self.liste_joueurs = GestionFichierJson().lecture_du_fichier('./temp/temp_classement_id_joueurs.json')
     self.duels_precedent = GestionFichierJson().lecture_du_fichier('./temp/temp_liste_des_duels.json')
     self.duels = []
@@ -129,6 +134,8 @@ class GenerationDesPaires:
 class IssueDuMatch:
 
   def resultat(self, joueur1, joueur2):
+    '''Détermine l'issue du match'''
+
     self.issue = ["V", "N", "D"]
     self.resultat = random.choice(self.issue)
     
@@ -157,6 +164,7 @@ class IssueDuMatch:
 class Match:
 
   def __init__(self):
+    ''''''
     self.filename = 'rounds.json'
     self.instance_tours = []
     path_file = f'./{self.filename}'
@@ -206,7 +214,7 @@ class UpdateJoueurs():
     self.score_tour = GestionFichierJson().lecture_du_fichier('./temp/temp_score_tour.json')
     self.classement_joueurs = []
     self.id_joueurs = GenerationDesPaires().liste_joueurs_classe()
-    path_file = f'./temp/temp_scores_tours_precedent.json'
+    path_file = './temp/temp_scores_tours_precedent.json'
     path = os.path.exists(path_file)
     self.nb_joueurs = GestionFichierJson().lecture_du_fichier('Tournois.json')[-1]['Joueurs'] + 1
     
