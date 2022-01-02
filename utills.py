@@ -15,7 +15,7 @@ class GestionDossierTemp:
 
         shutil.rmtree('./temp/')
 
-    def toto(self):
+    def gestion_dossier(self):
         try :
             GestionDossierTemp().creation_dossier()
         except :
@@ -43,7 +43,7 @@ class GestionFichierJson:
 class CheckDuel:
     def check(self, a, b, c):
         '''Vérifie si un duel est présent dans la liste des duels passé'''
-        self.check1 = any([x == a for x in c])
-        self.check2 = any([x == b for x in c])
+        self.check1 = any(x == a for x in c)
+        self.check2 = any(x == b for x in c)
         self.check = any((self.check1, self.check2))
         return self.check

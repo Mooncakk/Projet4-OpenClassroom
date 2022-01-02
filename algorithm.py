@@ -5,8 +5,8 @@ import os
 import random
 import time
 from itertools import count, islice
-from modules import GestionDossierTemp, GestionFichierJson, CheckDuel as cd, ListeJoueurs
-#from gestion_joueurs_et_tournois import ListeJoueurs, GestionFichierJson
+from gestion_joueurs_et_tournois import ListeJoueurs
+from utills import GestionDossierTemp, GestionFichierJson, CheckDuel as cd
 
 
 class GenerationDesPaires:
@@ -20,10 +20,13 @@ class GenerationDesPaires:
   def liste_joueurs_classe(self):
     '''Trie la liste des joueurs par ordre de classement'''
 
-    self.dict_joueurs = dict()
+    self.dict_joueurs = {}
     self.liste_joueurs = GenerationDesPaires().liste_des_joueurs()
-    for joueur_id, infos_joueur in zip(count(1), self.liste_joueurs):
-      joueur = infos_joueur[f'{joueur_id}']
+    '''for joueur_id, infos_joueur in zip(count(1), self.liste_joueurs):
+      joueur = infos_joueur[f'{joueur_id}']'''
+    for infos_joueur in self.liste_joueurs:
+      for joueur_id in infos_joueur:
+        joueur  = infos_joueur[f'{joueur_id}']
       self.dict_joueurs[joueur_id] = joueur
     self.liste_trie_par_classement = sorted(self.dict_joueurs, key = lambda x :(self.dict_joueurs[x]['Classement']), reverse = True)
     return self.liste_trie_par_classement
@@ -196,6 +199,11 @@ class Match:
 
 
 class UpdateJoueurs():
+
+  nb_joueurs = GestionFichierJson().lecture_du_fichier('Tournois.json')[0]['Joueurs']
+  liste_joueurs = GestionFichierJson().lecture_du_fichier('Joueurs.json')
+
+
   def score_tour(self, duels):
     self.liste_scores = Match().match(duels)
     self.liste_scores_joueur1 = self.liste_scores[0]
@@ -216,13 +224,13 @@ class UpdateJoueurs():
     self.id_joueurs = GenerationDesPaires().liste_joueurs_classe()
     path_file = './temp/temp_scores_tours_precedent.json'
     path = os.path.exists(path_file)
-    self.nb_joueurs = GestionFichierJson().lecture_du_fichier('Tournois.json')[-1]['Joueurs'] + 1
-    
+    self.liste_joueurs = self.liste_joueurs[:self.nb_joueurs]
 
     if path == True:     
       scores_tours_precedent = GestionFichierJson().lecture_du_fichier('./temp/temp_scores_tours_precedent.json')
-      for i in range(1,self.nb_joueurs):
-        scores_tours_precedent[f'{i}'] += self.score_tour[f'{i}']
+      for infos_joueur in self.liste_joueurs:
+        for i in infos_joueur:
+          scores_tours_precedent[f'{i}'] += self.score_tour[f'{i}']
 
       self.classement_joueurs_par_score = dict(sorted(scores_tours_precedent.items(),key= lambda x : x[1], reverse= True))
         
@@ -240,18 +248,19 @@ class UpdateJoueurs():
       
 
   def update_classement_general(self):
-    self.liste_joueurs = GestionFichierJson().lecture_du_fichier('Joueurs.json')
+    self.liste_joueurs = self.liste_joueurs[:self.nb_joueurs]
     self.score_tournoi = GestionFichierJson().lecture_du_fichier('./temp/temp_scores_tours_precedent.json')
     self.temp = []
-    for liste_joueurs, id_joueur, v in zip(self.liste_joueurs, count(1), count(0)):
+    for liste_joueurs, v in zip(self.liste_joueurs, count(0)):
+      for i in liste_joueurs:
+        id_joueur = i
       nouveau_scores_classement = self.liste_joueurs[v][f'{id_joueur}']['Classement'] + self.score_tournoi[f'{id_joueur}']
-      self.infos_joueurs = {}
-      self.infos_joueurs[id_joueur] = {'Nom de famille' : self.liste_joueurs[v][f'{id_joueur}']['Nom de famille'],
+      self.infos_joueurs = {id_joueur : {'Nom de famille' : self.liste_joueurs[v][f'{id_joueur}']['Nom de famille'],
                           'Prénom' : self.liste_joueurs[v][f'{id_joueur}']['Prénom'],
                           'Date de naissance' : self.liste_joueurs[v][f'{id_joueur}']['Date de naissance'],
                           'Sexe' : self.liste_joueurs[v][f'{id_joueur}']['Sexe'],
                           'Classement' : nouveau_scores_classement
-                            }
+                            }}
       self.temp.append(self.infos_joueurs)
 
     GestionFichierJson().ecriture_du_fichier(self.temp, 'Joueurs.json', 4)
@@ -267,7 +276,7 @@ class ExecutionAlgorithm:
   def __init__(self):
   
     nb_tours = GestionFichierJson().lecture_du_fichier('Tournois.json')[0]['Nombre de tours']  
-    GestionDossierTemp().toto()
+    GestionDossierTemp().gestion_dossier
     self.round_start = datetime.datetime.now().strftime("%-d/%m/%y %H:%M:%S")
     print(f'Début du tournoi : {self.round_start}')
     print(f'Debut du round 1')
