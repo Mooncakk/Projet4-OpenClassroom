@@ -46,92 +46,48 @@ class GenerationDesPaires:
     return self.duels_tour1
 
   def duels_tour_suivant(self) :
-    '''Récupère la liste des duels passé et le classement temporaire du tournoi pour former les duels du tour suivant en évitant que les joueurs affrontent le même adversdaire deuux fois'''
+    '''Récupère la liste des duels passé et le classement temporaire du tournoi pour former les duels du tour suivant en évitant que les joueurs affrontent le même adversdaire deux fois'''
+    
     self.liste_joueurs = GestionFichierJson().lecture_du_fichier('./temp/temp_classement_id_joueurs.json')
     self.duels_precedent = GestionFichierJson().lecture_du_fichier('./temp/temp_liste_des_duels.json')
-    self.duels = []
-    reserve = []
+    self.liste_duels = []
     nb_duels = int(len(self.liste_joueurs)//2)
-    while len(self.liste_joueurs) > 0:
-        for i in range(nb_duels):
+    self.creation_duels = False
 
-            if len(reserve) > 1:
-                joueur1 = reserve[0]
-                joueur2_id = reserve[1]
-            elif len(reserve) > 0:
-                joueur1 = reserve[0]
-                joueur2_id = self.liste_joueurs[0]
+    if len(self.liste_joueurs) > 1:
+      i = 0
+      while self.creation_duels == False:
+        try:
+          for i in range(nb_duels):
+            self.joueur1 = self.liste_joueurs[i]
+            self.joueur2 = self.liste_joueurs[i+2]
+            self.check = cd().retour_check(self.joueur1, self.joueur2)
+            if self.check == False:
+              self.duel = [self.joueur1, self.joueur2]
+              self.liste_duels.append(self.duel)
+              self.liste_joueurs.pop(0)
+              self.liste_joueurs.pop(0)
             else:
-                joueur1 = self.liste_joueurs[0]
-                joueur2_id = self.liste_joueurs[1]
+              while self.check == True:
+                i+= 1
+                self.joueur2 = self.liste_joueurs[i+1]
+                self.check = cd().retour_check(self.joueur1, self.joueur2)
+                if self.check == False:
+                  self.duel = [self.joueur1, self.joueur2]
+                  self.list_duels.append(self.duel)
+                  self.liste_joueurs.pop(i+1)
+              self.liste_joueurs.pop(i+1)
+          return self.creation_duels == True
+        except:
+          self.liste_duels = []
+          i+= 1
+          return self.creation_duels == False      
 
-            duel = [joueur1, joueur2_id]
-            duel_inverse = [joueur2_id, joueur1]
-            checklist = []
-            for i in self.duels_precedent:
-                ck = cd().check(duel, duel_inverse, i)
-                checklist.append(ck)
-
-            if any(checklist) == False:
-                self.duels.append((joueur1, joueur2_id))
-                if len(reserve) > 1:
-                    reserve.pop(0)
-                    reserve.pop(0)
-                elif len(reserve) > 0:
-                    reserve.pop(0)
-                    self.liste_joueurs.pop(0)
-                else:
-                    self.liste_joueurs.pop(0)
-                    self.liste_joueurs.pop(0)
-            else:
-                    
-                if len(reserve) > 1:
-                    joueur2_id = self.liste_joueurs[0]
-                    self.duels.append((joueur1, joueur2_id))
-                    reserve.pop(0)
-                    self.liste_joueurs.pop(0)
-
-                elif len(reserve) > 0:
-                    reserve.append(joueur2_id)
-                    self.liste_joueurs.pop(0)
-                    joueur2_id = self.liste_joueurs[0]
-                    self.duels.append((joueur1, joueur2_id))
-                    self.liste_joueurs.pop(0)
-                    reserve.pop(0)
-
-                else:    
-                    
-                    reserve.append(joueur2_id)
-                    self.liste_joueurs.pop(1)
-                    joueur2_id = self.liste_joueurs[1]
-                    duel = [joueur1, joueur2_id]
-                    duel_inverse = [joueur2_id, joueur1] 
-                    ct = []
-                    for i in self.duels_precedent:
-                            ck = cd().check(duel, duel_inverse, i)
-                            ct.append(ck)
-                    if any(ct) == True : 
-                        cc = True
-                        while cc == True:
-                            reserve.append(joueur2_id)
-                            self.liste_joueurs.pop(1)
-                            joueur2_id = self.liste_joueurs[1]
-                            duel = [joueur1, joueur2_id]
-                            duel_inverse = [joueur2_id, joueur1]  
-                            ckt = [] 
-                            for i in self.duels_precedent:
-                                ck = cd().check(duel, duel_inverse, i)
-                                ckt.append(ck)
-                            cc = any(ckt) 
-            
-                    self.duels.append((joueur1, joueur2_id))
-                    self.liste_joueurs.pop(0)
-                    self.liste_joueurs.pop(0)
-
-    self.duels_precedent.append(self.duels)
+    self.duels_precedent.append(self.liste_duels)
     GestionFichierJson().ecriture_du_fichier(self.duels_precedent, './temp/temp_liste_des_duels.json')
     '''Mettre les listes de duels dans un fichier temporaire pour pouvoir comparer si il y a une similitude !'''
-    return self.duels
+    print(self.liste_duels)
+    return self.liste_duels
 
 
 class IssueDuMatch:
@@ -276,7 +232,7 @@ class ExecutionAlgorithm:
   def __init__(self):
   
     nb_tours = GestionFichierJson().lecture_du_fichier('Tournois.json')[0]['Nombre de tours']  
-    GestionDossierTemp().gestion_dossier
+    GestionDossierTemp().gestion_dossier()
     self.round_start = datetime.datetime.now().strftime("%-d/%m/%y %H:%M:%S")
     print(f'Début du tournoi : {self.round_start}')
     print(f'Debut du round 1')
