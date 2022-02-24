@@ -3,6 +3,7 @@ import datetime
 import json
 import os
 import random
+from signal import raise_signal
 import time
 from itertools import count, islice
 from gestion_joueurs_et_tournois import ListeJoueurs
@@ -58,30 +59,32 @@ class GenerationDesPaires:
       i = 0
       while self.creation_duels == False:
         try:
-          for i in range(nb_duels):
+          for v in range(nb_duels):
             self.joueur1 = self.liste_joueurs[i]
-            self.joueur2 = self.liste_joueurs[i+2]
+            self.joueur2 = self.liste_joueurs[i+1]
             self.check = cd().retour_check(self.joueur1, self.joueur2)
             if self.check == False:
               self.duel = [self.joueur1, self.joueur2]
               self.liste_duels.append(self.duel)
-              self.liste_joueurs.pop(0)
-              self.liste_joueurs.pop(0)
+              self.liste_joueurs.remove(self.joueur1)
+              self.liste_joueurs.remove(self.joueur2)
             else:
+              ii = i
               while self.check == True:
-                i+= 1
-                self.joueur2 = self.liste_joueurs[i+1]
+                ii+= 1
+                self.joueur2 = self.liste_joueurs[ii+1]
                 self.check = cd().retour_check(self.joueur1, self.joueur2)
                 if self.check == False:
                   self.duel = [self.joueur1, self.joueur2]
-                  self.list_duels.append(self.duel)
-                  self.liste_joueurs.pop(i+1)
-              self.liste_joueurs.pop(i+1)
-          return self.creation_duels == True
+                  self.liste_duels.append(self.duel)                  
+                  self.liste_joueurs.remove(self.joueur1)
+                  self.liste_joueurs.remove(self.joueur2)
+          self.creation_duels = True
         except:
+          
           self.liste_duels = []
           i+= 1
-          return self.creation_duels == False      
+          self.creation_duels = False     
 
     self.duels_precedent.append(self.liste_duels)
     GestionFichierJson().ecriture_du_fichier(self.duels_precedent, './temp/temp_liste_des_duels.json')
