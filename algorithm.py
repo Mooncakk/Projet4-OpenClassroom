@@ -3,7 +3,6 @@ import datetime
 import json
 import os
 import random
-from signal import raise_signal
 import time
 from itertools import count, islice
 from gestion_joueurs_et_tournois import ListeJoueurs
@@ -56,12 +55,21 @@ class GenerationDesPaires:
     self.creation_duels = False
 
     if len(self.liste_joueurs) > 1:
+      essai = 0
       i = 0
       while self.creation_duels == False:
         try:
           for v in range(nb_duels):
+            if essai > len(self.liste_joueurs) -1 and v < 1:
+              i = essai
+              self.joueur2 = self.liste_joueurs[0]
+            elif v < 1:
+              i = essai
+              self.joueur2 = self.liste_joueurs[i+1]
+            else : 
+              i = 0
+              self.joueur2 = self.liste_joueurs[i+1]
             self.joueur1 = self.liste_joueurs[i]
-            self.joueur2 = self.liste_joueurs[i+1]
             self.check = cd().retour_check(self.joueur1, self.joueur2)
             if self.check == False:
               self.duel = [self.joueur1, self.joueur2]
@@ -81,9 +89,9 @@ class GenerationDesPaires:
                   self.liste_joueurs.remove(self.joueur2)
           self.creation_duels = True
         except:
-          
           self.liste_duels = []
-          i+= 1
+          self.liste_joueurs = GestionFichierJson().lecture_du_fichier('./temp/temp_classement_id_joueurs.json')
+          essai+= 1
           self.creation_duels = False     
 
     self.duels_precedent.append(self.liste_duels)
