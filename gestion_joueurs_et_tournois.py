@@ -43,7 +43,7 @@ class AjoutJoueurs():
     for i, _id_ in zip_longest(range(1,100), self.liste_id_joueurs):
       if i not in self.liste_id_joueurs:
         self.next_id.append(i)
-
+        
     id_joueur = self.next_id[0]
     id_infos  = {id_joueur : self.infos_joueurs}
     self.liste_de_joueurs.append(id_infos)
