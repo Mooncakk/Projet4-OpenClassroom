@@ -1,6 +1,6 @@
 import json
 import os
-from itertools import count
+from itertools import count, zip_longest
 
 from utills import GestionFichierJson as GFJ
 
@@ -35,9 +35,16 @@ class AjoutJoueurs():
                      'Sexe' : self.sexe,
                      'Classement' : self.classement}
     self.liste_de_joueurs = GFJ().lecture_du_fichier(self.filename)
+    self.liste_id_joueurs = []
+    self.next_id = []
     for infos_joueur in self.liste_de_joueurs:
       for joueur_id in infos_joueur:
-        id_joueur = int(joueur_id) + 1
+        self.liste_id_joueurs.append(int(joueur_id))
+    for i, _id_ in zip_longest(range(1,100), self.liste_id_joueurs):
+      if i not in self.liste_id_joueurs:
+        self.next_id.append(i)
+
+    id_joueur = self.next_id[0]
     id_infos  = {id_joueur : self.infos_joueurs}
     self.liste_de_joueurs.append(id_infos)
     GFJ().ecriture_du_fichier(self.liste_de_joueurs, self.filename, 4)
@@ -181,7 +188,7 @@ class EditData():
           elif self.id_joueur > 0 and self.id_joueur <= self.nb_joueurs :
             self.listejoueurs.pop(self.id_joueur-1)
             GFJ().ecriture_du_fichier(self.listejoueurs, 'Joueurs.json', 4)
-            print(f'Le joueur {self.id_joueur} à été supprimé !')
+            print(f'Le joueur {self.id_joueur} à été supprimé !\n')
 
     RetourMenuJoueur().retour3()
 
